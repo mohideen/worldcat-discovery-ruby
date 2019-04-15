@@ -91,10 +91,18 @@ module WorldCat
         
         # Make the HTTP request for the data
         resource = RestClient::Resource.new url
-        resource.get(:authorization => auth, 
-            :user_agent => "WorldCat::Discovery Ruby gem / #{WorldCat::Discovery::VERSION}",
-            :accept => 'application/rdf+xml') do |response, request, result|
-          [response, result]
+        begin
+          resource.get(:authorization => auth, 
+              :user_agent => "WorldCat::Discovery Ruby gem / #{WorldCat::Discovery::VERSION}",
+              :accept => 'application/rdf+xml', :accept_encoding => 'gzip, deflate') do |response, request, result|
+            [response, result]
+          end
+        rescue Zlib::GzipFile::Error
+          resource.get(:authorization => auth, 
+              :user_agent => "WorldCat::Discovery Ruby gem / #{WorldCat::Discovery::VERSION}",
+              :accept => 'application/rdf+xml', :accept_encoding => 'plain') do |response, request, result|
+            [response, result]
+          end
         end
       end
       
